@@ -7,7 +7,7 @@ let gameButton = document.getElementById('startgame');
 let startGameButtons = document.getElementById('hidden');
 let hitButton = document.getElementById('Hit');
 let standButton = document.getElementById('Stand');
-let royalCards = [10, 'J', 'Q', 'K'];
+let royalCards = [10, 'J', 'Q', 'K']; // Mixed int and string, js reads all as strings here. Shouldn't mix different types
 let cardsDrawn = [];
 let individualCardValues = [];
 let totalCardValue = 0;
@@ -40,22 +40,26 @@ function standButtonEnable() {
 }
 
 // Random value function 
-function dice() {
+function dice() { // Weird function name
     return(Math.floor(Math.random() * 13) + 1)
 }
 
 function gameOutcome(playerScore, dealerScore) {
     console.log(playerScore, dealerScore);
     outcomeEl.style.display = 'block';
-    if ((playerScore > 21 && dealerScore > 21) || (playerScore == dealerScore)){
+    if ((playerScore > 21 && dealerScore > 21) || (playerScore === dealerScore)){ // "10" == 10 returns true, "10" === 10 returns false
             return outcomeEl.textContent = "Draw! Play again?"
     } else if (playerScore > 21) {
             return outcomeEl.textContent = "Better luck next time!"
-    } else if (playerScore < dealerScore) {
+    } else if (playerScore < dealerScore) { // need to ensure that dealer haven't bust also
             return outcomeEl.textContent = "Better luck next time!"
     } else if (playerScore > dealerScore) {
             return outcomeEl.textContent = "Congratulations, You win!"
     }
+    // dealer > player, dealer > 21, dealer < 21, dealer == 21, player > 21, player < 21, player == 21
+    // player > dealer, dealer > 21, dealer < 21, dealer == 21, player > 21, player < 21, player == 21
+    // dealer === player, dealer > 21, dealer < 21, dealer == 21
+    // number of cases: 13 with overlapping results
 }
 
 function blackjackChecker(result) {
@@ -86,10 +90,10 @@ function sumOfAllCards(arrayOfCards, aceCount) {
                 aceCount++;
             }
         });
-        while (sumOfArray > 21) {
+        while (sumOfArray > 21) { // Should check the number of aces as well
             sumOfArray -= 10;
             aceCount--
-            return sumOfArray
+            return sumOfArray // wait early return? you don't need loop here then, just 'if' can liao
         }  
     } else {
         return sumOfArray
@@ -102,11 +106,12 @@ function hit() {
     if (isAlive && !hasBlackjack) {    
         let aceCount = 0;
         let drawValue = 0;
-        let cardID = 0;
-        drawValue = dice();
+        let cardID = 0; // string or int?
+        drawValue = dice(); // not proper distribution for a deck of cards. possible to draw 5 4's / 3's / 2's / A's.
         
         if (drawValue >= 10) { // Defaults values larger than 10 to 10 (J Q K can be drawn)
             drawValue = 10
+            // Index can just take drawValue - (13 - 4) = drawValue - 9
             cardID = royalCards[Math.floor(Math.random() * 4)]; // Set the card ID to be either 10 J Q or K
         } else if (drawValue === 1) { // Set drawn card of 1 to Ace
             cardID = 'A';
@@ -132,8 +137,9 @@ function stand() {
     let dealerAces = 0;
     console.log('Dealer is playing...')
 
+    // I think dealer also only have max 5 draws
     while (dealerTotalValue < dealerStandsOnValue) { // Ensure dealer has a value that he will stand on
-        let dealerDraw = dice();
+        let dealerDraw = dice(); // Should draw from a deck
         console.log(dealerDraw);
         if (dealerDraw === 1) { // Solves for special case of Aces
             dealerDraw = 11;

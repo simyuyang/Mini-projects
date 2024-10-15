@@ -139,7 +139,7 @@ function stand() {
 
     // I think dealer also only have max 5 draws
     while (dealerTotalValue < dealerStandsOnValue) { // Ensure dealer has a value that he will stand on
-        let dealerDraw = dice(); // Should draw from a deck
+        let dealerDraw = dice(); // Should draw from the same deck instead. possible occurence of more than 4 of the same card.
         console.log(dealerDraw);
         if (dealerDraw === 1) { // Solves for special case of Aces
             dealerDraw = 11;
@@ -155,6 +155,7 @@ function stand() {
         }
     }
     console.log(dealerTotalValue);
+    // Can also display the hand the Dealer has
     dealerEl.textContent = "Dealer has stood on: " + dealerTotalValue;
     standButtonDisable();
     hitButtonDisable();
@@ -179,6 +180,8 @@ function startGame() { // Start game function which reveals play buttons
     hit();
     startGameButtons.style.display = 'flex';
     gameButton.textContent = 'RESTART GAME';
+
+    // can initialise the deck here
 }
 
 

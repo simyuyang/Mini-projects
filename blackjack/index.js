@@ -51,7 +51,7 @@ function gameOutcome(playerScore, dealerScore) {
             return outcomeEl.textContent = "Draw! Play again?"
     } else if (playerScore > 21) {
             return outcomeEl.textContent = "Better luck next time!"
-    } else if ((playerScore < dealerScore) && ~(dealerScore > 21)) { // need to ensure that dealer haven't bust also
+    } else if ((playerScore < dealerScore) && !(dealerScore > 21)) { // need to ensure that dealer haven't bust also
             return outcomeEl.textContent = "Better luck next time!"
     } else if (playerScore > dealerScore) {
             return outcomeEl.textContent = "Congratulations, You win!"
@@ -90,11 +90,12 @@ function sumOfAllCards(arrayOfCards, aceCount) {
                 aceCount++;
             }
         });
-        while (sumOfArray > 21 && aceCount > 0) { // Should check the number of aces as well
+        while (sumOfArray > 21) { // Should check the number of aces as well
             sumOfArray -= 10;
             aceCount--
-            return sumOfArray // wait early return? you don't need loop here then, just 'if' can liao
-        }  
+            return sumOfArray  
+            // wait early return? you don't need loop here then, just 'if' can liao
+        }
     } else {
         return sumOfArray
     }

@@ -29,7 +29,7 @@ class Deck {
             this.deck[counter] = this.deck[i];
             this.deck[i] = temp;
         }
-        return this.deck
+        return this.deck;
     }
 
     deal() {

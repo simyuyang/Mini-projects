@@ -51,7 +51,9 @@ function createDeck(suits, values) {
     }
 
     // Shuffle the deck
-    let counter = deck.length, temp, i;
+    let counter = deck.length,
+        temp,
+        i;
 
     while(counter) {
         i = Math.floor(Math.random() * counter--);
@@ -71,11 +73,11 @@ function createDeck(suits, values) {
 function gameOutcome(playerScore, dealerScore) {
     console.log(playerScore, dealerScore);
     outcomeEl.style.display = 'block';
-    if ((playerScore > 21 && dealerScore > 21) || (playerScore == dealerScore)){ // "10" == 10 returns true, "10" === 10 returns false
+    if ((playerScore > 21 && dealerScore > 21) || (playerScore === dealerScore)){ // "10" == 10 returns true, "10" === 10 returns false
             return outcomeEl.textContent = "Draw! Play again?"
     } else if (playerScore > 21) {
             return outcomeEl.textContent = "Better luck next time!"
-    } else if ((playerScore < dealerScore) && !(dealerScore > 21)) { // need to ensure that dealer haven't bust also
+    } else if ((playerScore < dealerScore) && (dealerScore <= 21)) { // need to ensure that dealer haven't bust also
             return outcomeEl.textContent = "Better luck next time!"
     } else if (playerScore > dealerScore) {
             return outcomeEl.textContent = "Congratulations, You win!"

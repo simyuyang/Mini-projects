@@ -1,0 +1,41 @@
+body {
+    background-color: #D5E1EF;
+}
+
+.container {
+    font-family:Arial, Helvetica, sans-serif;
+    width: 250px;
+    background-color: white;
+    border-radius: 10px;
+    margin: 150px auto;
+    padding: 8px 8px;
+    outline: none;
+
+    /* Box shadow */
+    box-shadow: 0px 10px 30px rgb(190, 190, 190);
+
+    /* Flex box design */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+
+#qr-code {
+    width: 250px;
+    border-radius: 10px;
+}
+
+.text-body {
+    padding: 8px 12px 12px 12px;
+    text-align: center;
+}
+
+#main-text {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#sub-text {
+    font-size: 13px;
+}

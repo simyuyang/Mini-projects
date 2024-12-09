@@ -115,7 +115,6 @@ function blackjackChecker(result) {
 function sumOfAllCards(hand) {
 
     function helper(total, remainingHand) {
-        console.log(remainingHand);
         if (remainingHand.length === 0) {
             return total;
         }
@@ -142,9 +141,7 @@ function sumOfAllCards(hand) {
 
     }
 
-    let value = helper(0, [...hand]);
-    console.log(value);
-    return value;
+    return helper(0, [...hand]);
 }
 
 function hit() {

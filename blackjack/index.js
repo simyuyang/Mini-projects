@@ -7,16 +7,13 @@ let gameButton = document.getElementById('startgame');
 let startGameButtons = document.getElementById('hidden');
 let hitButton = document.getElementById('Hit');
 let standButton = document.getElementById('Stand');
-let cardsDrawn = [];
-let individualCardValues = [];
-let totalCardValue = 0;
-let isAlive = true;
-let hasBlackjack = false;
-const dealerStandsOnValue = 17;
-const royalCards = ['10', 'J', 'Q', 'K']; // Mixed int and string, js reads all as strings here. Shouldn't mix different types
-const suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades'];
-const values = [2,3,4,5,6,7,8,9,10,'J','Q','K','A'];
 
+const cardValues = { 1 : 'A', 2 : '2', 3 : '3', 4 : '4', 5 : '5', 6 : '6', 7 : '7', 8 : '8', 9 : '9', 10 : '10', 11 : 'J', 12 : 'Q', 13 : 'K'};
+const blackjackValue = 21;
+const dealerStandsOnValue = 17;
+let playingDeck = [];
+let playerHand = [];
+let dealerHand = [];
 
 // Functions to disable and enable pressing of hit and stand buttons after busting, obtaining a blackjack, or standing
 // Will be reset by clicking "RESET GAME"
@@ -41,183 +38,162 @@ function standButtonEnable() {
     standButton.disabled = false;
 }
 
-// Create a 52-card deck
-function createDeck(suits, values) {
-    deck = [];
-    for (let suit of suits) {
-        for (let value of values) {
-            deck.push(value);
-        }
-    }
+function shuffleDeck(deck) {
+    let counter = deck.length;
+    let index;
+    
+    while(counter > 0) {
+        index = Math.floor(Math.random() * counter--);
 
-    // Shuffle the deck
-    let counter = deck.length,
-        temp,
-        i;
-
-    while(counter) {
-        i = Math.floor(Math.random() * counter--);
         temp = deck[counter];
-        deck[counter] = deck[i];
-        deck[i] = temp;
+        deck[counter] = deck[index];
+        deck[index] = temp;
     }
-    console.log(deck);
+
     return deck;
 }
 
-// Random value function 
-// function drawACard() { // Weird function name
-//     return(Math.floor(Math.random() * 13) + 1)
-// }
+// Create a 52-card deck
+function createDeck() {
+    let deck = [];
+    for (let i = 0; i < 4; i++) {
+        for (let j = 1; j <= 13; j++) {
+            deck.push(j);
+        }
+    }
+
+    return shuffleDeck(deck);
+}
+
+function drawCard(deck, hand) {
+    const card = deck.pop();
+    hand.push(card);
+}
 
 function gameOutcome(playerScore, dealerScore) {
-    console.log(playerScore, dealerScore);
     outcomeEl.style.display = 'block';
-    if ((playerScore > 21 && dealerScore > 21) || (playerScore === dealerScore)){ // "10" == 10 returns true, "10" === 10 returns false
-            return outcomeEl.textContent = "Draw! Play again?"
-    } else if (playerScore > 21) {
-            return outcomeEl.textContent = "Better luck next time!"
-    } else if ((playerScore < dealerScore) && (dealerScore <= 21)) { // need to ensure that dealer haven't bust also
-            return outcomeEl.textContent = "Better luck next time!"
-    } else if (playerScore > dealerScore) {
-            return outcomeEl.textContent = "Congratulations, You win!"
+
+    if (playerScore === blackjackValue) {
+        if (dealerScore === playerScore) {
+            outcomeEl.textContent = "Draw! Play again?";
+        } else {
+            outcomeEl.textContent = "Congratulations, You win!";
+        }
+    } else if (playerScore > blackjackValue) {
+        if (dealerScore > blackjackValue) {
+            outcomeEl.textContent = "Draw! Play again?";
+        } else {
+            outcomeEl.textContent = "Better luck next time!";
+        }
+    } else {
+        if (dealerScore > blackjackValue) {
+            outcomeEl.textContent = "Congratulations, You win!";
+        } else {
+            if (playerScore > dealerScore) {
+                outcomeEl.textContent = "Congratulations, You win!";
+            } else if (playerScore < dealerScore) {
+                outcomeEl.textContent = "Better luck next time!";
+            } else {
+                outcomeEl.textContent = "Draw! Play again?";
+            }
+        }
     }
-    // dealer > player, dealer > 21, dealer < 21, dealer == 21, player > 21, player < 21, player == 21
-    // player > dealer, dealer > 21, dealer < 21, dealer == 21, player > 21, player < 21, player == 21
-    // dealer === player, dealer > 21, dealer < 21, dealer == 21
-    // number of cases: 13 with overlapping results
 }
 
 function blackjackChecker(result) {
-    // If loop to determine blackjack or bust
-    if (result === 21) {
+    if (result === blackjackValue) {
         messageEl.textContent = 'You hit blackjack!'
-        hasBlackjack = true;
         hitButtonDisable();
-    } else if (result > 21) {
+    } else if (result > blackjackValue) {
         messageEl.textContent = "Oops, you've busted!"
-        isAlive = false;
         hitButtonDisable();
     } else {
         messageEl.textContent = "Hit or Stand"
     }
 }
 
-// Adds up total value of cards drawn by player
-function sumOfAllCards(arrayOfCards, aceCount) {
-    let sumOfArray = arrayOfCards.reduce((accumulator, currentValue) => {
-        return accumulator + currentValue
-    }, 0);
+function sumOfAllCards(hand) {
 
-    arrayOfCards.forEach(card => {
-        if (card === 11) {
-            aceCount++;
+    function helper(total, remainingHand) {
+        console.log(remainingHand);
+        if (remainingHand.length === 0) {
+            return total;
         }
-    })
-    while (sumOfArray > 21 && aceCount > 0) {
-        sumOfArray -= 10;
-        aceCount--;
+
+        const currentValue = remainingHand[0];
+        const remaining = remainingHand.slice(1);
+
+        if (currentValue > 10) {
+            return helper(total + 10, remaining);
+        }
+
+        if (currentValue === 1) {
+            const small = helper(total + 1, remaining);
+            const big = helper(total + 11, remaining);
+
+            if (big > blackjackValue) {
+                return small;
+            }
+
+            return big;
+        }
+
+        return helper(total + currentValue, remaining);
+
     }
-    console.log(sumOfArray)
-    return sumOfArray
+
+    let value = helper(0, [...hand]);
+    console.log(value);
+    return value;
 }
 
 function hit() {
-    // Hit function to draw more cards
-    // Also used to draw the first 2 cards whenever a new game is started
-    if (cardsDrawn.length >= 5) { // Maximum of 5 cards 
+    if (playerHand.length >= 5) {
         hitButtonDisable();
-    } else if (isAlive && !hasBlackjack) {    
-        let aceCount = 0;
-        let drawnCard = 0;
-        let yourCardID = 0; // string or int? (INT)
-        drawnCard = deck.pop() // not proper distribution for a deck of cards. possible to draw 5 4's / 3's / 2's / A's.
-        console.log(drawnCard)
-        
-        if (['J','Q','K'].includes(drawnCard)) {
-            yourCardID = drawnCard;
-            drawnCard = 10;
-        } else if (drawnCard === 'A') {
-            yourCardID = 'A';
-            drawnCard = 11;
-        } else {
-            yourCardID = drawnCard;
-        }
-    
-        cardsDrawn.push(yourCardID);
-        individualCardValues.push(drawnCard);
-        totalCardValue = sumOfAllCards(individualCardValues, aceCount)
-        sumEl.textContent = "Total: " + totalCardValue;
-        cardsEl.textContent = "Cards drawn: " + cardsDrawn;
-        console.log(cardsDrawn);
-        
-        blackjackChecker(totalCardValue)
+        return;
     }
+
+    drawCard(playingDeck, playerHand);
+    let handValue = sumOfAllCards(playerHand);
+    
+    blackjackChecker(handValue);
+
+    sumEl.textContent = "Total: " + handValue;
+    cardsEl.textContent = "Cards drawn: " + playerHand.map(v => cardValues[v]);
 }
 
 function stand() {
-    // Stands your value and dealer will draw cards
-    let dealerTotalValue = 0;
-    let dealerAces = 0;
-    let dealerCardsDrawn = [];
-    console.log('Dealer is playing...')
+    let dealerHandValue = 0;
 
-    // Dealer's turn
-    // I think dealer also only have max 5 draws
-    while (dealerTotalValue < dealerStandsOnValue) { // Ensure dealer has a value that he will stand on
-        let dealerDraw = deck.pop(); // Dealer draws from the same deck player draws from
-        console.log(dealerDraw);
-
-        // Resolves card identities
-        if (['J','Q','K'].includes(dealerDraw)) {
-            dealerCardID = dealerDraw;
-            dealerDraw = 10;
-        } else if (dealerDraw === 'A') {
-            dealerCardID = 'A';
-            dealerDraw = 11;
-            dealerAces++;
-        } else {
-            dealerCardID = dealerDraw;
-        }
-
-        // Calculates dealer card values
-        dealerTotalValue += dealerDraw;
-        dealerCardsDrawn.push(dealerCardID);
-
-        // Resolves aces
-        while (dealerTotalValue > 21 && dealerAces > 0) {
-            dealerTotalValue -= 10;
-            dealerAces--;
-        }
+    while (dealerHandValue < dealerStandsOnValue && dealerHand.length < 5) {
+        drawCard(playingDeck, dealerHand);
+        
+        dealerHandValue = sumOfAllCards(dealerHand);
     }
-    console.log(dealerTotalValue);
-    // Can also display the hand the Dealer has
-    dealerEl.textContent = "Dealer has stood on: " + dealerTotalValue + " (Cards drawn: " + dealerCardsDrawn + ")";
+
+    dealerEl.textContent = "Dealer has stood on: " + dealerHandValue + " (Cards drawn: " + dealerHand.map(v => cardValues[v]) + ")";
+
+    gameOutcome(sumOfAllCards(playerHand), sumOfAllCards(dealerHand));
+
     standButtonDisable();
     hitButtonDisable();
-    gameOutcome(totalCardValue, dealerTotalValue);
 }
 
-/////////
-
-// Set initial value of cards to be zero
-function startGame() { // Start game function which reveals play buttons
+function startGame() {
     hitButtonEnable();
     standButtonEnable();
-    deckOfCards = createDeck(suits, values);
+
     outcomeEl.style.display = 'none';
     messageEl.textContent = "Hit or Stand";
     dealerEl.textContent = "Dealer is waiting for your stand"
-    totalCardValue = 0;
-    cardsDrawn = [];
-    individualCardValues = [];
-    isAlive = true;
-    hasBlackjack = false;
-    hit(); // Drawing of first 2 cards
-    hit();
     startGameButtons.style.display = 'flex';
     gameButton.textContent = 'RESTART GAME';
 
-    // can initialise the deck here
+    playingDeck = createDeck();
+    playerHand = [];
+    dealerHand = [];
+
+    hit();
+    hit();
 }
 
